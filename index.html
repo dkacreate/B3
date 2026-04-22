@@ -1,443 +1,1501 @@
 <!DOCTYPE html>
-<html lang="nl" class="scroll-smooth">
+
+<html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B3 Partner In Business Solutions - Bewindvoering & Budgetbeheer</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>crossover.bot — Kraken Live EUR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,300;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e0c;
+    --surface: #0f1412;
+    --surface-2: #151b18;
+    --border: #1e2622;
+    --border-bright: #2a342e;
+    --text: #e8ece9;
+    --muted: #6b7670;
+    --muted-2: #9aa39d;
+    --green: #3ddc84;
+    --green-dim: rgba(61, 220, 132, 0.12);
+    --red: #ff5c5c;
+    --red-dim: rgba(255, 92, 92, 0.12);
+    --amber: #f5c451;
+    --amber-dim: rgba(245, 196, 81, 0.12);
+    --blue: #6bb6ff;
+    --ink: #070908;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 15% 0%, rgba(61, 220, 132, 0.06), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 85% 100%, rgba(107, 182, 255, 0.04), transparent 60%);
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        navy: {
-                            DEFAULT: '#0a192f',
-                            light: '#112a4f',
-                            dark: '#050d18'
-                        },
-                        gold: {
-                            DEFAULT: '#eab308',
-                            hover: '#facc15',
-                            dark: '#ca8a04'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Merriweather', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        ::selection {
-            background-color: #eab308;
-            color: #0a192f;
-        }
-    </style>
+/* HEADER */
+header {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+padding-bottom: 20px;
+border-bottom: 1px solid var(–border);
+margin-bottom: 24px;
+flex-wrap: wrap;
+gap: 12px;
+}
+.brand { display: flex; align-items: baseline; gap: 12px; }
+h1 {
+font-family: ‘Fraunces’, serif;
+font-weight: 900;
+font-size: 36px;
+letter-spacing: -0.03em;
+font-style: italic;
+line-height: 1;
+}
+h1 .accent { color: var(–green); font-style: normal; }
+.version { color: var(–muted); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.badge {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+padding: 5px 10px;
+background: var(–surface-2);
+border: 1px solid var(–border);
+border-radius: 2px;
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: 0.12em;
+color: var(–amber);
+font-weight: 500;
+}
+.badge.live { color: var(–green); border-color: rgba(61, 220, 132, 0.3); }
+.badge.live::before {
+content: ‘’;
+width: 6px; height: 6px;
+background: var(–green);
+border-radius: 50%;
+animation: pulse 2s infinite;
+box-shadow: 0 0 8px var(–green);
+}
+.badge.paper::before {
+content: ‘’;
+width: 6px; height: 6px;
+background: var(–amber);
+border-radius: 50%;
+animation: pulse 2s infinite;
+}
+.badge.offline { color: var(–muted); }
+.badge.offline::before {
+content: ‘’;
+width: 6px; height: 6px;
+background: var(–muted);
+border-radius: 50%;
+}
+.badge.warn { color: var(–red); border-color: rgba(255, 92, 92, 0.3); }
+.badge.warn::before {
+content: ‘’;
+width: 6px; height: 6px;
+background: var(–red);
+border-radius: 50%;
+animation: pulse 1s infinite;
+}
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.35; }
+}
+
+/* LAYOUT */
+.grid-main {
+display: grid;
+grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+gap: 16px;
+margin-bottom: 16px;
+}
+.panel {
+background: var(–surface);
+border: 1px solid var(–border);
+padding: 20px;
+border-radius: 4px;
+}
+.panel h2 {
+font-family: ‘Fraunces’, serif;
+font-size: 17px;
+font-weight: 500;
+margin-bottom: 16px;
+letter-spacing: -0.01em;
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+}
+.panel h2 .sub {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 0.15em;
+font-weight: 400;
+}
+
+/* FORM CONTROLS */
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.control-group { display: flex; flex-direction: column; gap: 5px; }
+.control-group.full { grid-column: 1 / -1; }
+.control-group label {
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: 0.1em;
+color: var(–muted);
+display: flex;
+justify-content: space-between;
+}
+.control-group label .hint { color: var(–muted); font-size: 9px; text-transform: none; letter-spacing: 0; }
+input, select {
+background: var(–ink);
+border: 1px solid var(–border);
+color: var(–text);
+padding: 9px 10px;
+font-family: inherit;
+font-size: 13px;
+border-radius: 2px;
+outline: none;
+transition: border-color 0.15s;
+width: 100%;
+}
+input:focus, select:focus { border-color: var(–green); }
+input:disabled, select:disabled { opacity: 0.5; }
+
+/* SEGMENTED BUTTONS */
+.segmented {
+display: flex;
+gap: 2px;
+background: var(–ink);
+padding: 2px;
+border: 1px solid var(–border);
+border-radius: 2px;
+}
+.segmented button {
+flex: 1;
+padding: 7px 4px;
+font-size: 11px;
+background: transparent;
+border: none;
+color: var(–muted);
+cursor: pointer;
+border-radius: 2px;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+font-family: inherit;
+font-weight: 500;
+transition: all 0.15s;
+}
+.segmented button:hover:not(.active):not(:disabled) { color: var(–text); }
+.segmented button.active { background: var(–surface-2); color: var(–green); }
+.segmented button:disabled { cursor: not-allowed; }
+
+/* TOGGLE */
+.toggle-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 8px 10px;
+background: var(–ink);
+border: 1px solid var(–border);
+border-radius: 2px;
+}
+.toggle-row label {
+font-size: 11px;
+color: var(–text);
+text-transform: uppercase;
+letter-spacing: 0.08em;
+margin: 0;
+cursor: pointer;
+}
+.toggle {
+position: relative;
+width: 36px;
+height: 20px;
+background: var(–border);
+border-radius: 10px;
+cursor: pointer;
+transition: background 0.2s;
+}
+.toggle::after {
+content: ‘’;
+position: absolute;
+top: 2px;
+left: 2px;
+width: 16px;
+height: 16px;
+background: var(–muted);
+border-radius: 50%;
+transition: all 0.2s;
+}
+.toggle.on { background: var(–green-dim); }
+.toggle.on::after { left: 18px; background: var(–green); }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 8px; margin-top: 18px; }
+.btn {
+font-family: inherit;
+font-size: 12px;
+padding: 11px 16px;
+border: 1px solid var(–border);
+background: var(–surface-2);
+color: var(–text);
+cursor: pointer;
+border-radius: 2px;
+text-transform: uppercase;
+letter-spacing: 0.1em;
+font-weight: 600;
+transition: all 0.15s;
+flex: 1;
+}
+.btn:hover:not(:disabled) { border-color: var(–text); background: var(–border); }
+.btn.primary { background: var(–green); color: var(–ink); border-color: var(–green); }
+.btn.primary:hover:not(:disabled) { background: #4fe893; box-shadow: 0 0 16px rgba(61, 220, 132, 0.3); }
+.btn.danger { border-color: rgba(255, 92, 92, 0.4); color: var(–red); }
+.btn.danger:hover:not(:disabled) { background: var(–red); color: var(–ink); border-color: var(–red); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* STATS */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(–border); border: 1px solid var(–border); }
+.stat { background: var(–surface); padding: 14px; min-width: 0; }
+.stat-label {
+font-size: 9px;
+text-transform: uppercase;
+letter-spacing: 0.12em;
+color: var(–muted);
+margin-bottom: 6px;
+}
+.stat-value {
+font-family: ‘Fraunces’, serif;
+font-size: 24px;
+font-weight: 500;
+letter-spacing: -0.02em;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.stat-value.sm { font-size: 17px; }
+.stat-value.green { color: var(–green); }
+.stat-value.red { color: var(–red); }
+.stats-secondary {
+margin-top: 1px;
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1px;
+background: var(–border);
+border: 1px solid var(–border);
+border-top: none;
+}
+.stats-secondary .stat { padding: 12px 14px; }
+.pulse-price { animation: priceUp 0.4s; }
+@keyframes priceUp { 0% { color: var(–green); } 100% { color: var(–text); } }
+.pulse-down { animation: priceDown 0.4s; }
+@keyframes priceDown { 0% { color: var(–red); } 100% { color: var(–text); } }
+
+/* POSITION CARD */
+.pos-card {
+margin-top: 14px;
+padding: 14px;
+background: var(–ink);
+border: 1px solid var(–border);
+border-radius: 2px;
+display: none;
+}
+.pos-card.active { display: block; }
+.pos-card-header {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+margin-bottom: 10px;
+}
+.pos-card-header .label {
+font-size: 10px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 0.1em;
+}
+.pos-card-header .side { color: var(–green); font-weight: 700; font-size: 11px; }
+.pos-card-row {
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+gap: 12px;
+font-size: 12px;
+}
+.pos-card-row > div { display: flex; flex-direction: column; gap: 2px; }
+.pos-card-row .k { color: var(–muted); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; }
+.pos-card-row .v { font-family: ‘Fraunces’, serif; font-size: 15px; }
+.pos-card-levels {
+margin-top: 10px;
+padding-top: 10px;
+border-top: 1px solid var(–border);
+display: flex;
+gap: 14px;
+font-size: 11px;
+}
+.pos-card-levels .sl { color: var(–red); }
+.pos-card-levels .tp { color: var(–green); }
+
+/* CHART */
+.chart-wrap { height: 420px; position: relative; }
+
+/* LOG */
+.log {
+max-height: 320px;
+overflow-y: auto;
+font-size: 12px;
+padding-right: 4px;
+}
+.log::-webkit-scrollbar { width: 6px; }
+.log::-webkit-scrollbar-track { background: var(–ink); }
+.log::-webkit-scrollbar-thumb { background: var(–border); border-radius: 3px; }
+.log-entry {
+padding: 9px 0;
+border-bottom: 1px solid var(–border);
+display: grid;
+grid-template-columns: 68px 62px 1fr auto;
+gap: 10px;
+align-items: center;
+}
+.log-entry:last-child { border: none; }
+.log-time { color: var(–muted); font-size: 11px; }
+.log-tag {
+font-size: 9px;
+text-transform: uppercase;
+letter-spacing: 0.12em;
+font-weight: 700;
+text-align: center;
+padding: 3px 6px;
+border-radius: 2px;
+}
+.log-tag.buy { background: var(–green-dim); color: var(–green); }
+.log-tag.sell { background: var(–red-dim); color: var(–red); }
+.log-tag.sl { background: var(–red-dim); color: var(–red); }
+.log-tag.tp { background: var(–green-dim); color: var(–green); }
+.log-tag.info { background: var(–surface-2); color: var(–muted-2); }
+.log-tag.warn { background: var(–amber-dim); color: var(–amber); }
+.log-msg { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.log-price { color: var(–muted); font-size: 11px; text-align: right; white-space: nowrap; }
+
+/* SMALL ACTION BUTTONS */
+.panel-actions {
+display: flex;
+gap: 6px;
+}
+.icon-btn {
+background: transparent;
+border: 1px solid var(–border);
+color: var(–muted);
+padding: 5px 10px;
+font-family: inherit;
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: 0.08em;
+cursor: pointer;
+border-radius: 2px;
+transition: all 0.15s;
+}
+.icon-btn:hover { color: var(–text); border-color: var(–muted); }
+.icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* STRATEGY INFO */
+.strat-info {
+padding: 10px 12px;
+background: var(–ink);
+border: 1px solid var(–border);
+border-left: 2px solid var(–green);
+border-radius: 2px;
+font-size: 11px;
+color: var(–muted-2);
+line-height: 1.6;
+margin-top: 10px;
+}
+.strat-info b { color: var(–text); font-weight: 500; }
+
+footer {
+margin-top: 24px;
+padding-top: 16px;
+border-top: 1px solid var(–border);
+font-size: 10px;
+color: var(–muted);
+text-align: center;
+letter-spacing: 0.08em;
+line-height: 1.8;
+}
+
+@media (max-width: 820px) {
+body { padding: 14px; font-size: 12px; }
+h1 { font-size: 28px; }
+.grid-main { grid-template-columns: 1fr; }
+.stats { grid-template-columns: 1fr 1fr; }
+.stats-secondary { grid-template-columns: 1fr; }
+.stat-value { font-size: 20px; }
+.chart-wrap { height: 320px; }
+.controls { grid-template-columns: 1fr; }
+.log-entry { grid-template-columns: 55px 52px 1fr; }
+.log-price { grid-column: 2 / -1; text-align: left; color: var(–muted); }
+.pos-card-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased">
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>crossover<span class="accent">.</span>bot</h1>
+      <span class="version">v4 · kraken</span>
+    </div>
+    <div class="badges">
+      <div class="badge offline" id="connStatus">Niet verbonden</div>
+      <div class="badge paper">Paper Trading</div>
+    </div>
+  </header>
 
-    <nav class="sticky top-0 z-50 bg-navy text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center gap-3">
-                        <div class="flex items-baseline">
-                            <span class="text-4xl font-bold text-gold tracking-tighter">B3</span>
-                        </div>
-                        <div class="hidden sm:flex flex-col justify-center">
-                            <span class="text-sm font-semibold tracking-widest uppercase text-white leading-tight">Partner In</span>
-                            <span class="text-xs tracking-widest uppercase text-gold leading-tight">Business Solutions</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#diensten" class="text-sm uppercase tracking-wider hover:text-gold transition-colors">Diensten</a>
-                    <a href="#werkwijze" class="text-sm uppercase tracking-wider hover:text-gold transition-colors">Werkwijze</a>
-                    <a href="#over-mij" class="text-sm uppercase tracking-wider hover:text-gold transition-colors">Over Mij</a>
-                    <a href="#contact" class="bg-gold text-navy px-5 py-2 rounded font-semibold uppercase tracking-wider text-sm hover:bg-gold-hover transition-colors">Contact</a>
-                </div>
-
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gold hover:text-white focus:outline-none">
-                        <i class="fa-solid fa-bars text-2xl" id="menu-icon"></i>
-                    </button>
-                </div>
-            </div>
+  <div class="grid-main">
+    <!-- CONFIG -->
+    <div class="panel">
+      <h2>Configuratie <span class="sub">Strategie · Risico</span></h2>
+      <div class="controls">
+        <div class="control-group">
+          <label>Symbool</label>
+          <select id="symbol">
+            <option value="BTC/EUR">BTC/EUR</option>
+            <option value="ETH/EUR">ETH/EUR</option>
+            <option value="SOL/EUR">SOL/EUR</option>
+            <option value="XRP/EUR">XRP/EUR</option>
+            <option value="ADA/EUR">ADA/EUR</option>
+            <option value="DOT/EUR">DOT/EUR</option>
+            <option value="LINK/EUR">LINK/EUR</option>
+            <option value="AVAX/EUR">AVAX/EUR</option>
+          </select>
         </div>
-
-        <div id="mobile-menu" class="hidden md:hidden bg-navy border-t border-slate-700">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="#diensten" class="block px-3 py-2 text-base font-medium hover:text-gold mobile-link">Diensten</a>
-                <a href="#werkwijze" class="block px-3 py-2 text-base font-medium hover:text-gold mobile-link">Werkwijze</a>
-                <a href="#over-mij" class="block px-3 py-2 text-base font-medium hover:text-gold mobile-link">Over Mij</a>
-                <a href="#contact" class="block px-3 py-2 text-base font-medium text-gold mobile-link">Contact</a>
-            </div>
+        <div class="control-group">
+          <label>Startkapitaal <span class="hint">EUR</span></label>
+          <input id="capital" type="number" value="10000" min="100">
         </div>
-    </nav>
-
-    <section class="relative bg-navy text-white py-20 lg:py-32 overflow-hidden">
-        <div class="absolute inset-0 opacity-10 pointer-events-none">
-            <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-gold rounded-full blur-3xl"></div>
-            <div class="absolute bottom-[-10%] left-[-5%] w-72 h-72 bg-blue-500 rounded-full blur-3xl"></div>
+        <div class="control-group full">
+          <label>Strategie</label>
+          <select id="strategy">
+            <option value="ma_cross">MA Crossover (snel boven traag = koop)</option>
+            <option value="rsi">RSI (oversold koopt, overbought verkoopt)</option>
+            <option value="ma_rsi">MA + RSI filter (beide moeten kloppen)</option>
+          </select>
         </div>
-
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="max-w-3xl">
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight mb-6">
-                    Financiële rust en zekerheid, <br/>
-                    <span class="text-gold">samen lossen we het op.</span>
-                </h1>
-                <p class="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl">
-                    B3 Partner In Business Solutions biedt betrouwbare bewindvoering, budgetbeheer en schuldstabilisatie. Wij nemen de postblokkade over, creëren overzicht en begeleiden u naar een zorgeloze toekomst.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="#contact" class="flex items-center justify-center gap-2 bg-gold text-navy px-8 py-4 rounded font-bold uppercase tracking-wider hover:bg-gold-hover transition-colors">
-                        Direct Hulp Aanvragen <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                    <a href="#diensten" class="flex items-center justify-center gap-2 border-2 border-slate-500 text-white px-8 py-4 rounded font-bold uppercase tracking-wider hover:border-gold hover:text-gold transition-colors">
-                        Lees Meer
-                    </a>
-                </div>
-            </div>
+        <div class="control-group" id="grp_fastMA">
+          <label>Snelle MA <span class="hint">periodes</span></label>
+          <input id="fastMA" type="number" value="9" min="2" max="50">
         </div>
-    </section>
-
-    <section class="py-16 bg-white border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-200">
-                <div class="p-6">
-                    <div class="mx-auto w-16 h-16 bg-slate-50 text-navy rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-handshake-angle text-3xl text-gold-dark"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3 font-serif">Persoonlijk & Betrokken</h3>
-                    <p class="text-slate-600">Vaste contactpersoon (Gerda) die naast u staat, niet oordeelt en uw belangen voorop stelt.</p>
-                </div>
-                <div class="p-6">
-                    <div class="mx-auto w-16 h-16 bg-slate-50 text-navy rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-shield-halved text-3xl text-gold-dark"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3 font-serif">Rust & Bescherming</h3>
-                    <p class="text-slate-600">Wij fungeren als schild. We nemen de post over en automatiseren betalingen zodat u rust ervaart.</p>
-                </div>
-                <div class="p-6">
-                    <div class="mx-auto w-16 h-16 bg-slate-50 text-navy rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-mobile-screen-button text-3xl text-gold-dark"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3 font-serif">24/7 Transparantie</h3>
-                    <p class="text-slate-600">Altijd online inzicht in uw inkomsten, uitgaven en actuele saldo via onze veilige portal.</p>
-                </div>
-            </div>
+        <div class="control-group" id="grp_slowMA">
+          <label>Trage MA <span class="hint">periodes</span></label>
+          <input id="slowMA" type="number" value="21" min="5" max="200">
         </div>
-    </section>
-
-    <section id="diensten" class="py-20 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-sm font-bold tracking-widest uppercase text-gold-dark mb-2">Onze Expertise</h2>
-                <h3 class="text-3xl md:text-4xl font-serif font-bold text-navy">Hoe wij u kunnen helpen</h3>
-                <div class="w-24 h-1 bg-gold mx-auto mt-6"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-lg shadow-md border border-slate-100 hover:shadow-xl transition-shadow relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-navy rounded-bl-full z-0 transform translate-x-12 -translate-y-12 group-hover:scale-110 transition-transform"></div>
-                    <i class="fa-solid fa-shield-halved text-4xl text-gold relative z-10 mb-6"></i>
-                    <h4 class="text-2xl font-bold font-serif mb-4 relative z-10">Beschermingsbewind</h4>
-                    <p class="text-slate-600 mb-6 relative z-10">
-                        Wanneer u door lichamelijke of geestelijke toestand niet in staat bent uw eigen financiën te beheren. Via de kantonrechter nemen wij de verantwoordelijkheid over, met volledige transparantie en jaarlijkse verantwoording.
-                    </p>
-                    <ul class="space-y-2 relative z-10">
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Betalen vaste lasten</li>
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Postverwerking & Administratie</li>
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Optimalisatie toeslagen</li>
-                    </ul>
-                </div>
-
-                <div class="bg-white p-8 rounded-lg shadow-md border border-slate-100 hover:shadow-xl transition-shadow relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-navy rounded-bl-full z-0 transform translate-x-12 -translate-y-12 group-hover:scale-110 transition-transform"></div>
-                    <i class="fa-solid fa-wallet text-4xl text-gold relative z-10 mb-6"></i>
-                    <h4 class="text-2xl font-bold font-serif mb-4 relative z-10">Budgetbeheer</h4>
-                    <p class="text-slate-600 mb-6 relative z-10">
-                        Heeft u moeite om maandelijks rond te komen of overzicht te houden? Wij beheren uw inkomsten, zorgen dat de vaste lasten betaald worden en u ontvangt een afgesproken bedrag aan leefgeld.
-                    </p>
-                    <ul class="space-y-2 relative z-10">
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Voorkomen van schulden</li>
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Reserveren voor onvoorziene kosten</li>
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Overzicht en stabiliteit</li>
-                    </ul>
-                </div>
-
-                <div class="bg-white p-8 rounded-lg shadow-md border border-slate-100 hover:shadow-xl transition-shadow relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-navy rounded-bl-full z-0 transform translate-x-12 -translate-y-12 group-hover:scale-110 transition-transform"></div>
-                    <i class="fa-regular fa-file-lines text-4xl text-gold relative z-10 mb-6"></i>
-                    <h4 class="text-2xl font-bold font-serif mb-4 relative z-10">Schuldstabilisatie</h4>
-                    <p class="text-slate-600 mb-6 relative z-10">
-                        Bij problematische schulden is structuur nodig. Wij fungeren als aanspreekpunt voor schuldeisers, stabiliseren uw situatie en bereiden, indien mogelijk, een schuldhulpverleningstraject voor.
-                    </p>
-                    <ul class="space-y-2 relative z-10">
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Inventarisatie van schulden</li>
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Contact met schuldeisers & incasso's</li>
-                        <li class="flex items-start gap-2 text-sm text-slate-700"><i class="fa-solid fa-circle-check text-gold-dark mt-1"></i> Trajectbegeleiding</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="control-group" id="grp_rsi" style="display: none;">
+          <label>RSI periode</label>
+          <input id="rsiPeriod" type="number" value="14" min="5" max="50">
         </div>
-    </section>
-
-    <section id="werkwijze" class="py-20 bg-navy text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-sm font-bold tracking-widest uppercase text-gold mb-2">Onze Werkwijze</h2>
-                <h3 class="text-3xl md:text-4xl font-serif font-bold">De route naar financiële stabiliteit</h3>
-                <div class="w-24 h-1 bg-gold mx-auto mt-6"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-                <div class="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-yellow-700 transform -translate-y-1/2 z-0"></div>
-
-                <div class="bg-slate-800 p-6 rounded-lg border border-slate-700 relative z-10">
-                    <div class="w-12 h-12 bg-gold text-navy rounded-full flex items-center justify-center font-bold text-xl mb-4 mx-auto md:mx-0">1</div>
-                    <h4 class="text-xl font-bold font-serif text-gold mb-3 text-center md:text-left">Bewustwording</h4>
-                    <p class="text-sm text-slate-300 text-center md:text-left">U merkt dat u het overzicht kwijt bent. Via een eerste, vrijblijvend contact bespreken we uw situatie op een veilige manier.</p>
-                </div>
-
-                <div class="bg-slate-800 p-6 rounded-lg border border-slate-700 relative z-10">
-                    <div class="w-12 h-12 bg-gold text-navy rounded-full flex items-center justify-center font-bold text-xl mb-4 mx-auto md:mx-0">2</div>
-                    <h4 class="text-xl font-bold font-serif text-gold mb-3 text-center md:text-left">Intake & Evaluatie</h4>
-                    <p class="text-sm text-slate-300 text-center md:text-left">Tijdens een face-to-face of video call analyseren we de behoeften. We maken een inschatting van de situatie en het plan van aanpak.</p>
-                </div>
-
-                <div class="bg-slate-800 p-6 rounded-lg border border-slate-700 relative z-10">
-                    <div class="w-12 h-12 bg-gold text-navy rounded-full flex items-center justify-center font-bold text-xl mb-4 mx-auto md:mx-0">3</div>
-                    <h4 class="text-xl font-bold font-serif text-gold mb-3 text-center md:text-left">Start Samenwerking</h4>
-                    <p class="text-sm text-slate-300 text-center md:text-left">Formele kick-off en onboarding. Aanvraag bij de kantonrechter of opstart budgetbeheer. De postblokkade gaat in, wat direct rust geeft.</p>
-                </div>
-
-                <div class="bg-slate-800 p-6 rounded-lg border border-slate-700 relative z-10">
-                    <div class="w-12 h-12 bg-gold text-navy rounded-full flex items-center justify-center font-bold text-xl mb-4 mx-auto md:mx-0">4</div>
-                    <h4 class="text-xl font-bold font-serif text-gold mb-3 text-center md:text-left">Stabiliteit & Toekomst</h4>
-                    <p class="text-sm text-slate-300 text-center md:text-left">Vaste kwartaalmeetings, 24/7 inzicht en continue optimalisatie. Van opluchting naar een gegarandeerde stabiele, vertrouwde situatie.</p>
-                </div>
-            </div>
+        <div class="control-group" id="grp_rsi_low" style="display: none;">
+          <label>RSI oversold <span class="hint">&lt;</span></label>
+          <input id="rsiLow" type="number" value="30" min="10" max="45">
         </div>
-    </section>
-
-    <section id="over-mij" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row items-center gap-12">
-                <div class="w-full md:w-1/3">
-                    <div class="relative">
-                        <div class="absolute inset-0 bg-gold rounded-full transform translate-x-4 translate-y-4"></div>
-                        
-                        <div class="relative z-10 aspect-square rounded-full overflow-hidden border-4 border-white shadow-xl bg-slate-200">
-                            rond de img tag hieronder -->
-                            <div class="absolute inset-0 flex items-center justify-center text-slate-400 bg-slate-100 flex-col p-4 text-center">
-                                <span class="text-sm uppercase tracking-widest">[Foto Gerda]</span>
-                                <span class="text-xs text-slate-500 mt-2">Zet hier 'Foto ma.png' in de code</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full md:w-2/3">
-                    <h2 class="text-sm font-bold tracking-widest uppercase text-gold-dark mb-2">Wie ben ik?</h2>
-                    <h3 class="text-3xl md:text-4xl font-serif font-bold text-navy mb-6">Gerda Bindesrisingh</h3>
-                    <p class="text-xl text-slate-700 mb-6 italic">Oprichter van B3 Partner In Business Solutions</p>
-                    <p class="text-slate-600 mb-4 leading-relaxed">
-                        Vanuit een diepe betrokkenheid bij de medemens heb ik B3 Partner In Business Solutions opgericht. Ik zie dagelijks hoe financiële problemen het leven van mensen kunnen beheersen, resulterend in stress, slapeloosheid en het gevoel vast te zitten in de bureaucratie.
-                    </p>
-                    <p class="text-slate-600 mb-6 leading-relaxed">
-                        Mijn doel is niet alleen om de financiële administratie weer op orde te krijgen, maar vooral om de <strong>mens achter de cijfers weer rust te geven</strong>. Door de complexe post, lastige telefoontjes met deurwaarders en instanties over te nemen, fungeer ik als uw schild. U staat er niet meer alleen voor. Met een oordeelvrije, transparante en oplossingsgerichte aanpak werken we samen aan een stabiel toekomstperspectief.
-                    </p>
-                    
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded bg-navy flex items-center justify-center">
-                            <span class="text-2xl font-bold text-gold">B3</span>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-navy">Betrokken, Betrouwbaar, Beschermend.</h4>
-                            <p class="text-sm text-slate-500">Uw partner in financiële oplossingen.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="control-group full">
+          <label>Candle-interval</label>
+          <div class="segmented" id="intervalGroup">
+            <button data-interval="1">1m</button>
+            <button class="active" data-interval="5">5m</button>
+            <button data-interval="15">15m</button>
+            <button data-interval="60">1h</button>
+            <button data-interval="240">4h</button>
+            <button data-interval="1440">1d</button>
+          </div>
         </div>
-    </section>
-
-    <section id="contact" class="py-20 bg-slate-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white rounded-xl shadow-xl overflow-hidden flex flex-col lg:flex-row">
-                
-                <div class="bg-navy text-white p-10 lg:w-2/5 flex flex-col justify-between relative overflow-hidden">
-                    <div class="absolute top-[-10%] right-[-10%] w-64 h-64 bg-gold rounded-full blur-3xl opacity-20 pointer-events-none"></div>
-                    
-                    <div class="relative z-10">
-                        <h3 class="text-3xl font-serif font-bold mb-2">Neem Contact Op</h3>
-                        <p class="text-slate-300 mb-10">Zet vandaag nog de stap naar rust in uw hoofd. Neem vrijblijvend contact op voor een kennismaking.</p>
-                        
-                        <div class="space-y-6">
-                            <div class="flex items-start gap-4">
-                                <i class="fa-solid fa-phone text-gold mt-1"></i>
-                                <div>
-                                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Telefoon</h4>
-                                    <p class="text-lg">+31 (0)6 1234 5678</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start gap-4">
-                                <i class="fa-solid fa-envelope text-gold mt-1"></i>
-                                <div>
-                                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-400">E-mail</h4>
-                                    <p class="text-lg break-all">info@b3partnerinbusinesssolutions.nl</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start gap-4">
-                                <i class="fa-solid fa-globe text-gold mt-1"></i>
-                                <div>
-                                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Website</h4>
-                                    <p class="text-lg break-all">www.b3partnerinbusinesssolutions.nl</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start gap-4">
-                                <i class="fa-solid fa-location-dot text-gold mt-1"></i>
-                                <div>
-                                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Kantoor</h4>
-                                    <p class="text-lg">Op afspraak<br/><span class="text-sm text-slate-400">(Nederland)</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-12 relative z-10 pt-8 border-t border-slate-700">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-gold font-bold">G</div>
-                            <div>
-                                <p class="font-semibold">Gerda Bindesrisingh</p>
-                                <p class="text-sm text-gold">Oprichter / Bewindvoerder</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-10 lg:w-3/5">
-                    <h3 class="text-2xl font-bold text-navy mb-6">Stuur een bericht</h3>
-                    <form class="space-y-6" action="#" method="POST">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Naam</label>
-                                <input type="text" id="name" name="name" class="w-full px-4 py-3 rounded border border-slate-300 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-colors" placeholder="Uw volledige naam" required>
-                            </div>
-                            <div>
-                                <label for="phone" class="block text-sm font-medium text-slate-700 mb-2">Telefoonnummer</label>
-                                <input type="tel" id="phone" name="phone" class="w-full px-4 py-3 rounded border border-slate-300 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-colors" placeholder="Uw telefoonnummer">
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">E-mailadres</label>
-                            <input type="email" id="email" name="email" class="w-full px-4 py-3 rounded border border-slate-300 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-colors" placeholder="uw.naam@voorbeeld.nl" required>
-                        </div>
-
-                        <div>
-                            <label for="subject" class="block text-sm font-medium text-slate-700 mb-2">Onderwerp</label>
-                            <select id="subject" name="subject" class="w-full px-4 py-3 rounded border border-slate-300 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-colors bg-white">
-                                <option>Vraag over Beschermingsbewind</option>
-                                <option>Vraag over Budgetbeheer</option>
-                                <option>Algemene vraag / Kennismaking</option>
-                                <option>Anders</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="message" class="block text-sm font-medium text-slate-700 mb-2">Bericht</label>
-                            <textarea id="message" name="message" rows="4" class="w-full px-4 py-3 rounded border border-slate-300 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-colors resize-none" placeholder="Waarmee kunnen wij u helpen?" required></textarea>
-                        </div>
-
-                        <button type="submit" class="w-full bg-navy text-white font-bold py-4 rounded uppercase tracking-widest hover:bg-navy-light transition-colors focus:ring-4 focus:ring-slate-300">
-                            Verstuur Bericht
-                        </button>
-                        <p class="text-xs text-slate-500 text-center mt-4">Uw gegevens worden vertrouwelijk en veilig behandeld.</p>
-                    </form>
-                </div>
-
-            </div>
+        <div class="control-group">
+          <label>Stop-loss <span class="hint">%</span></label>
+          <input id="stopLoss" type="number" value="3" min="0" max="20" step="0.5">
         </div>
-    </section>
-
-    <footer class="bg-navy-dark text-slate-400 py-12 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                <div>
-                    <div class="flex items-baseline mb-4">
-                        <span class="text-3xl font-bold text-gold tracking-tighter mr-2">B3</span>
-                        <span class="text-sm font-semibold tracking-widest uppercase text-white leading-tight">Partner In Business Solutions</span>
-                    </div>
-                    <p class="text-sm">Professionele bewindvoering en budgetbeheer. Wij creëren overzicht, stabiliteit en rust voor uw financiële situatie.</p>
-                </div>
-                
-                <div>
-                    <h4 class="text-white font-semibold uppercase tracking-wider mb-4">Snelle Links</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#diensten" class="hover:text-gold transition-colors">Diensten</a></li>
-                        <li><a href="#werkwijze" class="hover:text-gold transition-colors">Werkwijze</a></li>
-                        <li><a href="#over-mij" class="hover:text-gold transition-colors">Over Gerda</a></li>
-                        <li><a href="#contact" class="hover:text-gold transition-colors">Contact</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="text-white font-semibold uppercase tracking-wider mb-4">Juridisch</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-gold transition-colors">Privacyverklaring</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors">Algemene Voorwaarden</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors">Klachtenregeling</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs">
-                <p>&copy; <script>document.write(new Date().getFullYear())</script> B3 Partner In Business Solutions. Alle rechten voorbehouden.</p>
-                <p class="mt-2 md:mt-0">KVK: [KVK Nummer]</p>
-            </div>
+        <div class="control-group">
+          <label>Take-profit <span class="hint">%</span></label>
+          <input id="takeProfit" type="number" value="6" min="0" max="50" step="0.5">
         </div>
-    </footer>
+        <div class="control-group">
+          <label>Fee per trade <span class="hint">%</span></label>
+          <input id="fee" type="number" value="0.26" min="0" max="2" step="0.01">
+        </div>
+        <div class="control-group">
+          <label>Bron</label>
+          <input value="Kraken WebSocket v2" disabled>
+        </div>
+        <div class="control-group full">
+          <div class="toggle-row">
+            <label for="soundToggle">Geluid bij trade</label>
+            <div class="toggle on" id="soundToggle" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+        </div>
+      </div>
 
-    <script>
-        const btn = document.getElementById('mobile-menu-button');
-        const menu = document.getElementById('mobile-menu');
-        const icon = document.getElementById('menu-icon');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
+```
+  <div class="strat-info" id="stratInfo"></div>
 
-        btn.addEventListener('click', () => {
-            menu.classList.toggle('hidden');
-            if (menu.classList.contains('hidden')) {
-                icon.classList.remove('fa-xmark');
-                icon.classList.add('fa-bars');
-            } else {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-xmark');
+  <div class="btn-row">
+    <button class="btn primary" id="startBtn">Start Bot</button>
+    <button class="btn danger" id="stopBtn" disabled>Stop</button>
+    <button class="btn" id="resetBtn">Reset</button>
+  </div>
+</div>
+
+<!-- PORTFOLIO -->
+<div class="panel">
+  <h2>Portfolio <span class="sub">Realtime</span></h2>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Cash</div>
+      <div class="stat-value sm" id="cash">€10.000</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Positie</div>
+      <div class="stat-value sm" id="position">0,00</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Totaal</div>
+      <div class="stat-value sm" id="equity">€10.000</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">P&amp;L</div>
+      <div class="stat-value sm" id="pnl">0,00%</div>
+    </div>
+  </div>
+  <div class="stats-secondary">
+    <div class="stat">
+      <div class="stat-label">Prijs live</div>
+      <div class="stat-value sm" id="price">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Trades</div>
+      <div class="stat-value sm" id="tradeCount">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Win-rate</div>
+      <div class="stat-value sm" id="winRate">—</div>
+    </div>
+  </div>
+
+  <div class="pos-card" id="posCard">
+    <div class="pos-card-header">
+      <span class="label">Open positie</span>
+      <span class="side">LONG</span>
+    </div>
+    <div class="pos-card-row">
+      <div>
+        <span class="k">Entry</span>
+        <span class="v" id="posEntry">—</span>
+      </div>
+      <div>
+        <span class="k">Huidig</span>
+        <span class="v" id="posCurrent">—</span>
+      </div>
+      <div>
+        <span class="k">Ongerealiseerd</span>
+        <span class="v" id="posUnrealized">—</span>
+      </div>
+    </div>
+    <div class="pos-card-levels">
+      <span class="sl">↓ SL: <b id="posSL">—</b></span>
+      <span class="tp">↑ TP: <b id="posTP">—</b></span>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- CHART -->
+
+  <div class="panel" style="margin-bottom: 16px;">
+    <h2>
+      <span>Prijsgrafiek &amp; Signalen</span>
+      <span class="sub" id="chartSub">Kraken · live</span>
+    </h2>
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+
+  <!-- LOG -->
+
+  <div class="panel">
+    <h2>
+      <span>Trade Log <span class="sub">Historie</span></span>
+      <div class="panel-actions">
+        <button class="icon-btn" id="exportBtn">Export CSV</button>
+        <button class="icon-btn" id="clearLogBtn">Wissen</button>
+      </div>
+    </h2>
+    <div class="log" id="log">
+      <div class="log-entry idle-placeholder">
+        <span class="log-time">—</span>
+        <span class="log-tag info">idle</span>
+        <span class="log-msg">Klaar om te starten. Kies je strategie en druk op Start Bot.</span>
+        <span class="log-price"></span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Live koersen via Kraken WebSocket v2 · Simulatie — geen echte orders · Geen beleggingsadvies<br>
+    Je data blijft lokaal in je browser. Sluit het tabblad en alles is weg.
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// CROSSOVER.BOT v4 — Kraken live, multi-strategy, SL/TP
+// ============================================================
+
+// ============ STATE ============
+const state = {
+  running: false,
+  ws: null,
+  reconnectTimer: null,
+  reconnectAttempts: 0,
+  closedCandles: [],
+  currentCandleTime: null,
+  pendingClose: null,
+  fastLine: [],
+  slowLine: [],
+  rsiLine: [],
+  livePrice: null,
+  lastLivePrice: null,
+  trades: [],
+  cash: 10000,
+  startCapital: 10000,
+  position: 0,
+  avgBuyPrice: 0,
+  highWaterMark: 0,
+  lastSignal: null,
+  lastRsiSignal: null,
+  soundOn: true,
+  cfg: {
+    symbol: 'BTC/EUR',
+    interval: 5,
+    strategy: 'ma_cross',
+    fastMA: 9,
+    slowMA: 21,
+    rsiPeriod: 14,
+    rsiLow: 30,
+    rsiHigh: 70,
+    stopLoss: 0.03,
+    takeProfit: 0.06,
+    fee: 0.0026,
+  },
+};
+
+// ============ FORMATTERS ============
+const fmtEUR = (n) => '€' + (n || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtEURSmart = (n) => {
+  if (!n && n !== 0) return '—';
+  if (Math.abs(n) < 1 && n !== 0) return '€' + n.toLocaleString('nl-NL', { minimumFractionDigits: 4, maximumFractionDigits: 6 });
+  return fmtEUR(n);
+};
+const fmtCoin = (n) => (n || 0).toLocaleString('nl-NL', { minimumFractionDigits: 4, maximumFractionDigits: 8 });
+const fmtPct = (n) => (n >= 0 ? '+' : '') + n.toFixed(2).replace('.', ',') + '%';
+
+// ============ INDICATORS ============
+function smaOfCandles(candles, period) {
+  if (candles.length < period) return null;
+  let sum = 0;
+  for (let i = candles.length - period; i < candles.length; i++) sum += candles[i].close;
+  return sum / period;
+}
+
+// Wilder RSI
+function rsiOfCandles(candles, period) {
+  if (candles.length < period + 1) return null;
+  let gains = 0, losses = 0;
+  // initial average over eerste `period` changes
+  for (let i = 1; i <= period; i++) {
+    const diff = candles[i].close - candles[i - 1].close;
+    if (diff >= 0) gains += diff;
+    else losses -= diff;
+  }
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  // Wilder smoothing voor rest
+  for (let i = period + 1; i < candles.length; i++) {
+    const diff = candles[i].close - candles[i - 1].close;
+    const g = diff > 0 ? diff : 0;
+    const l = diff < 0 ? -diff : 0;
+    avgGain = (avgGain * (period - 1) + g) / period;
+    avgLoss = (avgLoss * (period - 1) + l) / period;
+  }
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - 100 / (1 + rs);
+}
+
+// ============ STRATEGIE SIGNAAL ============
+// Returns 'BUY' | 'SELL' | null
+function getSignal() {
+  const { strategy, fastMA, slowMA, rsiPeriod, rsiLow, rsiHigh } = state.cfg;
+  const candles = state.closedCandles;
+
+  if (strategy === 'ma_cross') {
+    const fast = smaOfCandles(candles, fastMA);
+    const slow = smaOfCandles(candles, slowMA);
+    if (fast === null || slow === null) return null;
+    const current = fast > slow ? 'above' : 'below';
+    if (state.lastSignal === null) { state.lastSignal = current; return null; }
+    if (state.lastSignal === 'below' && current === 'above') { state.lastSignal = current; return 'BUY'; }
+    if (state.lastSignal === 'above' && current === 'below') { state.lastSignal = current; return 'SELL'; }
+    state.lastSignal = current;
+    return null;
+  }
+
+  if (strategy === 'rsi') {
+    const rsi = rsiOfCandles(candles, rsiPeriod);
+    if (rsi === null) return null;
+    // signaleer zodra rsi van onder oversold terugkomt boven oversold = BUY
+    // en van boven overbought terugzakt onder overbought = SELL
+    const current = rsi < rsiLow ? 'oversold' : rsi > rsiHigh ? 'overbought' : 'neutral';
+    const prev = state.lastRsiSignal;
+    state.lastRsiSignal = current;
+    if (prev === 'oversold' && current === 'neutral') return 'BUY';
+    if (prev === 'overbought' && current === 'neutral') return 'SELL';
+    return null;
+  }
+
+  if (strategy === 'ma_rsi') {
+    const fast = smaOfCandles(candles, fastMA);
+    const slow = smaOfCandles(candles, slowMA);
+    const rsi = rsiOfCandles(candles, rsiPeriod);
+    if (fast === null || slow === null || rsi === null) return null;
+    const current = fast > slow ? 'above' : 'below';
+    if (state.lastSignal === null) { state.lastSignal = current; return null; }
+    let signal = null;
+    // MA crossover met RSI filter: koop alleen als RSI < 70, verkoop alleen als RSI > 30
+    if (state.lastSignal === 'below' && current === 'above' && rsi < rsiHigh) signal = 'BUY';
+    if (state.lastSignal === 'above' && current === 'below' && rsi > rsiLow) signal = 'SELL';
+    state.lastSignal = current;
+    return signal;
+  }
+  return null;
+}
+
+// ============ TRADE EXECUTIE ============
+function executeTrade(type, price, candleTime, reason = '') {
+  if (type === 'BUY' && state.cash > 10) {
+    const spend = state.cash;
+    const coins = (spend * (1 - state.cfg.fee)) / price;
+    state.position = coins;
+    state.avgBuyPrice = price;
+    state.highWaterMark = price;
+    state.cash = 0;
+    state.trades.push({
+      type: 'BUY', price, amount: coins, value: spend,
+      candleTime, time: Date.now(), reason
+    });
+    logTrade('BUY', price, coins, null, reason);
+    playSound('buy');
+    updatePosCard();
+    return true;
+  }
+  if (type === 'SELL' && state.position > 0) {
+    const receive = state.position * price * (1 - state.cfg.fee);
+    const cost = state.avgBuyPrice * state.position;
+    const profit = receive - cost;
+    const profitPct = (profit / cost) * 100;
+    state.cash = receive;
+    const soldCoins = state.position;
+    const tagType = reason === 'SL' ? 'SL' : reason === 'TP' ? 'TP' : 'SELL';
+    state.trades.push({
+      type: tagType, price, amount: soldCoins, value: receive,
+      profit, profitPct, candleTime, time: Date.now(), reason
+    });
+    state.position = 0;
+    state.avgBuyPrice = 0;
+    state.highWaterMark = 0;
+    logTrade(tagType, price, soldCoins, profit, reason);
+    playSound(profit >= 0 ? 'win' : 'loss');
+    updatePosCard();
+    return true;
+  }
+  return false;
+}
+
+// Check of stop-loss of take-profit geraakt wordt op live prijs
+function checkSLTP(livePrice, candleTime) {
+  if (state.position <= 0) return;
+  const { stopLoss, takeProfit } = state.cfg;
+  const entry = state.avgBuyPrice;
+  if (stopLoss > 0 && livePrice <= entry * (1 - stopLoss)) {
+    executeTrade('SELL', livePrice, candleTime, 'SL');
+    return;
+  }
+  if (takeProfit > 0 && livePrice >= entry * (1 + takeProfit)) {
+    executeTrade('SELL', livePrice, candleTime, 'TP');
+    return;
+  }
+}
+
+// ============ CANDLE-AFHANDELING ============
+function onCandleClose(candleTime) {
+  // Bereken en bewaar indicator-waarden
+  const { fastMA, slowMA, rsiPeriod } = state.cfg;
+  state.fastLine.push(smaOfCandles(state.closedCandles, fastMA));
+  state.slowLine.push(smaOfCandles(state.closedCandles, slowMA));
+  state.rsiLine.push(rsiOfCandles(state.closedCandles, rsiPeriod));
+
+  // Check signaal
+  const signal = getSignal();
+  if (!signal) return;
+
+  const price = state.closedCandles[state.closedCandles.length - 1].close;
+  if (signal === 'BUY' && state.position === 0) {
+    executeTrade('BUY', price, candleTime, 'Signaal');
+  } else if (signal === 'SELL' && state.position > 0) {
+    executeTrade('SELL', price, candleTime, 'Signaal');
+  }
+}
+
+// ============ CHART ============
+let chart;
+function initChart() {
+  const ctx = document.getElementById('chart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Prijs', data: [], borderColor: '#e8ece9',
+          backgroundColor: 'rgba(232, 236, 233, 0.04)', borderWidth: 1.8,
+          pointRadius: 0, tension: 0.2, fill: true },
+        { label: 'Snelle MA', data: [], borderColor: '#3ddc84',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3, borderDash: [] },
+        { label: 'Trage MA', data: [], borderColor: '#f5c451',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+        { label: 'Buy', data: [], borderColor: 'transparent',
+          backgroundColor: '#3ddc84', pointRadius: 9, pointStyle: 'triangle',
+          pointBorderColor: '#0a0e0c', pointBorderWidth: 2, showLine: false },
+        { label: 'Sell', data: [], borderColor: 'transparent',
+          backgroundColor: '#ff5c5c', pointRadius: 9, pointStyle: 'triangle',
+          pointRotation: 180, pointBorderColor: '#0a0e0c', pointBorderWidth: 2,
+          showLine: false },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: {
+          labels: { color: '#9aa39d', font: { family: 'JetBrains Mono', size: 10 },
+            boxWidth: 10, boxHeight: 10, padding: 14 },
+        },
+        tooltip: {
+          backgroundColor: '#0f1412',
+          borderColor: '#2a342e',
+          borderWidth: 1,
+          titleColor: '#e8ece9',
+          bodyColor: '#e8ece9',
+          titleFont: { family: 'JetBrains Mono', size: 11 },
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+          padding: 10,
+          callbacks: {
+            label: (ctx) => ctx.dataset.label + ': ' +
+              (ctx.parsed.y !== null && ctx.parsed.y !== undefined ? fmtEURSmart(ctx.parsed.y) : '—'),
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#6b7670', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 8 },
+          grid: { color: '#1e2622' },
+        },
+        y: {
+          ticks: {
+            color: '#6b7670',
+            font: { family: 'JetBrains Mono', size: 10 },
+            callback: (v) => '€' + (Math.abs(v) < 1 ? v.toLocaleString('nl-NL', { maximumFractionDigits: 4 })
+              : v.toLocaleString('nl-NL', { maximumFractionDigits: 0 })),
+          },
+          grid: { color: '#1e2622' },
+        },
+      },
+    },
+  });
+}
+
+function updateChart() {
+  const MAX = 140;
+  const candles = state.closedCandles.slice(-MAX);
+  const labels = candles.map(c => {
+    const d = new Date(c.time);
+    if (state.cfg.interval >= 1440) return d.toLocaleDateString('nl-NL', { day: '2-digit', month: 'short' });
+    return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  });
+  const prices = candles.map(c => c.close);
+  const fastSlice = state.fastLine.slice(-MAX);
+  const slowSlice = state.slowLine.slice(-MAX);
+
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = prices;
+  chart.data.datasets[1].data = fastSlice;
+  chart.data.datasets[2].data = slowSlice;
+
+  const timeToIdx = new Map(candles.map((c, i) => [c.time, i]));
+  const buyPoints = new Array(candles.length).fill(null);
+  const sellPoints = new Array(candles.length).fill(null);
+  state.trades.forEach(t => {
+    const idx = timeToIdx.get(t.candleTime);
+    if (idx !== undefined) {
+      if (t.type === 'BUY') buyPoints[idx] = t.price;
+      else sellPoints[idx] = t.price;
+    }
+  });
+  chart.data.datasets[3].data = buyPoints;
+  chart.data.datasets[4].data = sellPoints;
+
+  // Als er geen MA in de strategie zit, toggle labels
+  if (state.cfg.strategy === 'rsi') {
+    chart.data.datasets[1].hidden = true;
+    chart.data.datasets[2].hidden = true;
+  } else {
+    chart.data.datasets[1].hidden = false;
+    chart.data.datasets[2].hidden = false;
+  }
+  chart.update('none');
+}
+
+// ============ GELUID ============
+let audioCtx;
+function initAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+  }
+}
+function playSound(kind) {
+  if (!state.soundOn) return;
+  initAudio();
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const freqs = { buy: [440, 660], win: [523, 659, 784], loss: [330, 262] };
+  const seq = freqs[kind] || [440];
+  seq.forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = f;
+    gain.gain.setValueAtTime(0, now + i * 0.09);
+    gain.gain.linearRampToValueAtTime(0.08, now + i * 0.09 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.18);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now + i * 0.09);
+    osc.stop(now + i * 0.09 + 0.2);
+  });
+}
+
+// ============ LOG ============
+function clearIdleIfPresent() {
+  const log = document.getElementById('log');
+  const placeholder = log.querySelector('.idle-placeholder');
+  if (placeholder) log.innerHTML = '';
+}
+function logMsg(msg, tag = 'info') {
+  clearIdleIfPresent();
+  const log = document.getElementById('log');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const time = new Date().toLocaleTimeString('nl-NL');
+  entry.innerHTML = `
+    <span class="log-time">${time}</span>
+    <span class="log-tag ${tag}">${tag}</span>
+    <span class="log-msg">${msg}</span>
+    <span class="log-price"></span>
+  `;
+  log.insertBefore(entry, log.firstChild);
+  while (log.children.length > 100) log.removeChild(log.lastChild);
+}
+function logTrade(type, price, amount, profit, reason) {
+  clearIdleIfPresent();
+  const log = document.getElementById('log');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const time = new Date().toLocaleTimeString('nl-NL');
+  const coinName = state.cfg.symbol.split('/')[0];
+  const tagMap = { BUY: 'buy', SELL: 'sell', SL: 'sl', TP: 'tp' };
+  const tagClass = tagMap[type] || 'sell';
+  const tagLabel = type === 'SL' ? 'STOP' : type === 'TP' ? 'TP' : type;
+  let msg;
+  if (type === 'BUY') {
+    msg = `Kocht ${fmtCoin(amount)} ${coinName}`;
+    if (reason && reason !== 'Signaal') msg += ` · ${reason}`;
+  } else {
+    const pct = profit !== null && profit !== undefined ?
+      ((profit / (state.avgBuyPrice * amount || 1)) * 100) : null;
+    msg = `Verkocht ${fmtCoin(amount)} ${coinName}`;
+    if (profit !== null && profit !== undefined) {
+      msg += ` · ${profit >= 0 ? '+' : ''}${fmtEUR(profit)}`;
+    }
+    if (reason === 'SL') msg += ' · stop-loss';
+    else if (reason === 'TP') msg += ' · take-profit';
+  }
+  entry.innerHTML = `
+    <span class="log-time">${time}</span>
+    <span class="log-tag ${tagClass}">${tagLabel}</span>
+    <span class="log-msg">${msg}</span>
+    <span class="log-price">${fmtEURSmart(price)}</span>
+  `;
+  log.insertBefore(entry, log.firstChild);
+  while (log.children.length > 100) log.removeChild(log.lastChild);
+}
+
+// ============ UI UPDATE ============
+function updateStats() {
+  const price = state.livePrice ||
+    (state.closedCandles.length ? state.closedCandles[state.closedCandles.length - 1].close : 0);
+  const equity = state.cash + state.position * price;
+  const pnl = state.startCapital > 0 ? ((equity - state.startCapital) / state.startCapital) * 100 : 0;
+
+  document.getElementById('cash').textContent = fmtEUR(state.cash);
+  document.getElementById('position').textContent = state.position.toFixed(6);
+  document.getElementById('equity').textContent = fmtEUR(equity);
+
+  const pnlEl = document.getElementById('pnl');
+  pnlEl.textContent = fmtPct(pnl);
+  pnlEl.classList.toggle('green', pnl > 0);
+  pnlEl.classList.toggle('red', pnl < 0);
+
+  const priceEl = document.getElementById('price');
+  if (price && state.lastLivePrice && price !== state.lastLivePrice) {
+    priceEl.classList.remove('pulse-price', 'pulse-down');
+    void priceEl.offsetWidth; // force reflow
+    priceEl.classList.add(price > state.lastLivePrice ? 'pulse-price' : 'pulse-down');
+  }
+  priceEl.textContent = price ? fmtEURSmart(price) : '—';
+  state.lastLivePrice = price;
+
+  document.getElementById('tradeCount').textContent = state.trades.filter(t => t.type !== 'BUY').length +
+    (state.position > 0 ? 1 : 0);
+
+  const sells = state.trades.filter(t => ['SELL', 'SL', 'TP'].includes(t.type) && t.profit !== undefined);
+  if (sells.length > 0) {
+    const wins = sells.filter(t => t.profit > 0).length;
+    document.getElementById('winRate').textContent = Math.round((wins / sells.length) * 100) + '%';
+  } else {
+    document.getElementById('winRate').textContent = '—';
+  }
+  updatePosCard();
+}
+
+function updatePosCard() {
+  const card = document.getElementById('posCard');
+  if (state.position <= 0) {
+    card.classList.remove('active');
+    return;
+  }
+  card.classList.add('active');
+  const price = state.livePrice || state.avgBuyPrice;
+  const entry = state.avgBuyPrice;
+  const unrealized = (price - entry) * state.position;
+  const unrealizedPct = ((price - entry) / entry) * 100;
+
+  document.getElementById('posEntry').textContent = fmtEURSmart(entry);
+  document.getElementById('posCurrent').textContent = fmtEURSmart(price);
+  const unEl = document.getElementById('posUnrealized');
+  unEl.textContent = (unrealized >= 0 ? '+' : '') + fmtEUR(unrealized) + ' · ' + fmtPct(unrealizedPct);
+  unEl.style.color = unrealized >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const sl = state.cfg.stopLoss > 0 ? entry * (1 - state.cfg.stopLoss) : null;
+  const tp = state.cfg.takeProfit > 0 ? entry * (1 + state.cfg.takeProfit) : null;
+  document.getElementById('posSL').textContent = sl ? fmtEURSmart(sl) : 'uit';
+  document.getElementById('posTP').textContent = tp ? fmtEURSmart(tp) : 'uit';
+}
+
+function setConnStatus(statusText, cls) {
+  const el = document.getElementById('connStatus');
+  el.textContent = statusText;
+  el.className = 'badge ' + cls;
+}
+
+// ============ STRATEGIE UI ============
+function updateStrategyUI() {
+  const strat = document.getElementById('strategy').value;
+  const showMA = strat === 'ma_cross' || strat === 'ma_rsi';
+  const showRSI = strat === 'rsi' || strat === 'ma_rsi';
+  document.getElementById('grp_fastMA').style.display = showMA ? '' : 'none';
+  document.getElementById('grp_slowMA').style.display = showMA ? '' : 'none';
+  document.getElementById('grp_rsi').style.display = showRSI ? '' : 'none';
+  document.getElementById('grp_rsi_low').style.display = showRSI ? '' : 'none';
+
+  const info = document.getElementById('stratInfo');
+  const texts = {
+    ma_cross: '<b>MA Crossover</b> — Koop wanneer de snelle MA door de trage MA heen omhoog breekt (<i>golden cross</i>). Verkoop bij het omgekeerde. Klassiek trend-following signaal.',
+    rsi: '<b>RSI Mean Reversion</b> — Koop wanneer RSI terugkomt uit oversold (onder drempel), verkoop bij terugkeer uit overbought. Werkt het best in zijwaartse markten.',
+    ma_rsi: '<b>MA + RSI filter</b> — Vereist MA crossover <i>én</i> bevestigend RSI-niveau. Minder trades, maar hogere kwaliteit signalen.',
+  };
+  info.innerHTML = texts[strat];
+}
+
+// ============ KRAKEN API ============
+function restPairFromSymbol(symbol) {
+  return symbol.replace('/', '');
+}
+
+async function fetchHistorical(symbol, intervalMinutes) {
+  const pair = restPairFromSymbol(symbol);
+  const url = `https://api.kraken.com/0/public/OHLC?pair=${pair}&interval=${intervalMinutes}`;
+  logMsg('Historische data ophalen van Kraken…', 'info');
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error && data.error.length > 0) {
+    throw new Error('Kraken: ' + data.error.join(', '));
+  }
+  const result = data.result;
+  const pairKey = Object.keys(result).find(k => k !== 'last');
+  if (!pairKey) throw new Error('Geen data ontvangen');
+  const raw = result[pairKey];
+  const candles = raw.slice(0, -1).map(r => ({
+    time: r[0] * 1000,
+    close: parseFloat(r[4]),
+  }));
+  return candles.slice(-300);
+}
+
+function openWebSocket(symbol, intervalMinutes) {
+  const url = 'wss://ws.kraken.com/v2';
+  const ws = new WebSocket(url);
+
+  ws.onopen = () => {
+    state.reconnectAttempts = 0;
+    setConnStatus('Verbonden', 'live');
+    const subMsg = {
+      method: 'subscribe',
+      params: {
+        channel: 'ohlc',
+        symbol: [symbol],
+        interval: intervalMinutes,
+        snapshot: false,
+      },
+    };
+    ws.send(JSON.stringify(subMsg));
+  };
+
+  ws.onmessage = (ev) => {
+    let msg;
+    try { msg = JSON.parse(ev.data); } catch { return; }
+    if (msg.channel === 'heartbeat' || msg.channel === 'status') return;
+
+    if (msg.method === 'subscribe') {
+      if (msg.success) {
+        setConnStatus('Live', 'live');
+        logMsg(`Geabonneerd op ${symbol} · ${intervalMinutes}m candles.`, 'info');
+      } else {
+        logMsg(`Subscription fout: ${msg.error || 'onbekend'}`, 'warn');
+      }
+      return;
+    }
+
+    if (msg.channel === 'ohlc' && msg.type === 'update' && Array.isArray(msg.data)) {
+      for (const candle of msg.data) {
+        const close = parseFloat(candle.close);
+        const intervalBegin = new Date(candle.interval_begin).getTime();
+        state.livePrice = close;
+
+        if (state.currentCandleTime === null) {
+          state.currentCandleTime = intervalBegin;
+        } else if (intervalBegin > state.currentCandleTime) {
+          // Vorige candle gesloten
+          if (state.pendingClose !== null) {
+            const last = state.closedCandles[state.closedCandles.length - 1];
+            if (!last || last.time !== state.currentCandleTime) {
+              state.closedCandles.push({
+                time: state.currentCandleTime,
+                close: state.pendingClose,
+              });
+              onCandleClose(state.currentCandleTime);
+              updateChart();
             }
-        });
+          }
+          state.currentCandleTime = intervalBegin;
+        }
+        state.pendingClose = close;
 
-        // Sluit menu als op een linkje geklikt wordt (mobiel)
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                menu.classList.add('hidden');
-                icon.classList.remove('fa-xmark');
-                icon.classList.add('fa-bars');
-            });
-        });
-    </script>
+        // Check SL/TP op elke tick
+        checkSLTP(close, state.currentCandleTime);
+      }
+      updateStats();
+    }
+  };
+
+  ws.onerror = () => {
+    setConnStatus('Fout', 'warn');
+  };
+
+  ws.onclose = () => {
+    if (state.running) {
+      state.reconnectAttempts++;
+      const delay = Math.min(3000 * Math.pow(1.5, state.reconnectAttempts - 1), 30000);
+      setConnStatus(`Herverbinden in ${Math.round(delay / 1000)}s`, 'warn');
+      logMsg(`Verbinding verbroken, opnieuw proberen…`, 'warn');
+      state.reconnectTimer = setTimeout(() => {
+        if (state.running) {
+          state.ws = openWebSocket(state.cfg.symbol, state.cfg.interval);
+        }
+      }, delay);
+    } else {
+      setConnStatus('Offline', 'offline');
+    }
+  };
+
+  return ws;
+}
+
+// ============ CONTROLS ============
+function readConfig() {
+  return {
+    symbol: document.getElementById('symbol').value,
+    strategy: document.getElementById('strategy').value,
+    fastMA: parseInt(document.getElementById('fastMA').value) || 9,
+    slowMA: parseInt(document.getElementById('slowMA').value) || 21,
+    rsiPeriod: parseInt(document.getElementById('rsiPeriod').value) || 14,
+    rsiLow: parseFloat(document.getElementById('rsiLow').value) || 30,
+    rsiHigh: 100 - (parseFloat(document.getElementById('rsiLow').value) || 30),
+    stopLoss: (parseFloat(document.getElementById('stopLoss').value) || 0) / 100,
+    takeProfit: (parseFloat(document.getElementById('takeProfit').value) || 0) / 100,
+    fee: (parseFloat(document.getElementById('fee').value) || 0.26) / 100,
+    interval: parseInt(document.querySelector('#intervalGroup button.active').dataset.interval),
+  };
+}
+
+async function start() {
+  const capital = parseFloat(document.getElementById('capital').value) || 10000;
+  const cfg = readConfig();
+
+  if ((cfg.strategy === 'ma_cross' || cfg.strategy === 'ma_rsi') && cfg.fastMA >= cfg.slowMA) {
+    alert('Snelle MA moet kleiner zijn dan trage MA.');
+    return;
+  }
+
+  reset(false);
+  state.cfg = cfg;
+  state.cash = capital;
+  state.startCapital = capital;
+  state.running = true;
+  state.reconnectAttempts = 0;
+  state.pendingClose = null;
+  state.currentCandleTime = null;
+  state.lastSignal = null;
+  state.lastRsiSignal = null;
+
+  initAudio(); // initialize op user-gesture
+
+  setUIRunning(true);
+
+  try {
+    setConnStatus('Laden…', 'offline');
+    const historical = await fetchHistorical(cfg.symbol, cfg.interval);
+    const minNeeded = Math.max(cfg.slowMA, cfg.rsiPeriod + 1);
+    if (historical.length < minNeeded) {
+      throw new Error(`Te weinig historische data (${historical.length} < ${minNeeded})`);
+    }
+    state.closedCandles = historical;
+
+    // Precompute indicators for historical data
+    state.fastLine = [];
+    state.slowLine = [];
+    state.rsiLine = [];
+    for (let i = 1; i <= historical.length; i++) {
+      const slice = historical.slice(0, i);
+      state.fastLine.push(smaOfCandles(slice, cfg.fastMA));
+      state.slowLine.push(smaOfCandles(slice, cfg.slowMA));
+      state.rsiLine.push(rsiOfCandles(slice, cfg.rsiPeriod));
+    }
+
+    // Init signaal-state op huidige stand (geen instant trade)
+    const lastFast = state.fastLine[state.fastLine.length - 1];
+    const lastSlow = state.slowLine[state.slowLine.length - 1];
+    if (lastFast !== null && lastSlow !== null) {
+      state.lastSignal = lastFast > lastSlow ? 'above' : 'below';
+    }
+    const lastRsi = state.rsiLine[state.rsiLine.length - 1];
+    if (lastRsi !== null) {
+      state.lastRsiSignal = lastRsi < cfg.rsiLow ? 'oversold'
+        : lastRsi > cfg.rsiHigh ? 'overbought' : 'neutral';
+    }
+
+    const trendTxt = state.lastSignal === 'above' ? 'bullish ↑' : 'bearish ↓';
+    logMsg(`${historical.length} candles geladen · trend ${trendTxt}${lastRsi ? ' · RSI ' + lastRsi.toFixed(0) : ''}`, 'info');
+    updateChart();
+    updateStats();
+    document.getElementById('chartSub').textContent = `${cfg.symbol} · ${cfg.interval}m · live`;
+
+    state.ws = openWebSocket(cfg.symbol, cfg.interval);
+  } catch (err) {
+    logMsg(`Fout: ${err.message}`, 'warn');
+    stop();
+  }
+}
+
+function stop() {
+  state.running = false;
+  if (state.reconnectTimer) { clearTimeout(state.reconnectTimer); state.reconnectTimer = null; }
+  if (state.ws) {
+    try { state.ws.close(); } catch {}
+    state.ws = null;
+  }
+  setConnStatus('Offline', 'offline');
+  setUIRunning(false);
+}
+
+function reset(full = true) {
+  if (full) stop();
+  state.closedCandles = [];
+  state.fastLine = [];
+  state.slowLine = [];
+  state.rsiLine = [];
+  state.trades = [];
+  state.livePrice = null;
+  state.lastLivePrice = null;
+  state.cash = parseFloat(document.getElementById('capital').value) || 10000;
+  state.startCapital = state.cash;
+  state.position = 0;
+  state.avgBuyPrice = 0;
+  state.highWaterMark = 0;
+  state.lastSignal = null;
+  state.lastRsiSignal = null;
+  state.currentCandleTime = null;
+  state.pendingClose = null;
+  if (chart) {
+    chart.data.labels = [];
+    chart.data.datasets.forEach(d => d.data = []);
+    chart.update();
+  }
+  updateStats();
+  if (full) {
+    document.getElementById('log').innerHTML = `
+      <div class="log-entry idle-placeholder">
+        <span class="log-time">—</span>
+        <span class="log-tag info">idle</span>
+        <span class="log-msg">Reset. Klaar om opnieuw te starten.</span>
+        <span class="log-price"></span>
+      </div>
+    `;
+  }
+}
+
+function setUIRunning(isRunning) {
+  document.getElementById('startBtn').disabled = isRunning;
+  document.getElementById('stopBtn').disabled = !isRunning;
+  ['symbol', 'capital', 'strategy', 'fastMA', 'slowMA', 'rsiPeriod', 'rsiLow',
+    'stopLoss', 'takeProfit', 'fee'].forEach(id => {
+    document.getElementById(id).disabled = isRunning;
+  });
+  document.querySelectorAll('#intervalGroup button').forEach(b => b.disabled = isRunning);
+}
+
+// ============ CSV EXPORT ============
+function exportCSV() {
+  if (state.trades.length === 0) {
+    logMsg('Geen trades om te exporteren.', 'warn');
+    return;
+  }
+  const headers = ['Tijd', 'Type', 'Reden', 'Symbool', 'Prijs (EUR)', 'Aantal', 'Waarde (EUR)', 'Winst (EUR)', 'Winst %'];
+  const rows = state.trades.map(t => [
+    new Date(t.time).toLocaleString('nl-NL'),
+    t.type,
+    t.reason || '',
+    state.cfg.symbol,
+    t.price.toFixed(4),
+    t.amount.toFixed(8),
+    t.value ? t.value.toFixed(2) : '',
+    t.profit !== undefined ? t.profit.toFixed(2) : '',
+    t.profitPct !== undefined ? t.profitPct.toFixed(2) : '',
+  ]);
+  const csv = [headers, ...rows].map(r =>
+    r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const sym = state.cfg.symbol.replace('/', '');
+  a.download = `trades_${sym}_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  logMsg(`${state.trades.length} trades geëxporteerd.`, 'info');
+}
+
+function clearLog() {
+  document.getElementById('log').innerHTML = `
+    <div class="log-entry idle-placeholder">
+      <span class="log-time">—</span>
+      <span class="log-tag info">info</span>
+      <span class="log-msg">Log gewist.</span>
+      <span class="log-price"></span>
+    </div>
+  `;
+}
+
+// ============ INIT ============
+initChart();
+updateStats();
+updateStrategyUI();
+
+document.getElementById('strategy').addEventListener('change', updateStrategyUI);
+document.getElementById('startBtn').addEventListener('click', start);
+document.getElementById('stopBtn').addEventListener('click', stop);
+document.getElementById('resetBtn').addEventListener('click', () => reset(true));
+document.getElementById('exportBtn').addEventListener('click', exportCSV);
+document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+
+document.querySelectorAll('#intervalGroup button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (state.running) return;
+    document.querySelectorAll('#intervalGroup button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+const soundToggle = document.getElementById('soundToggle');
+function toggleSound() {
+  state.soundOn = !state.soundOn;
+  soundToggle.classList.toggle('on', state.soundOn);
+  soundToggle.setAttribute('aria-checked', state.soundOn);
+}
+soundToggle.addEventListener('click', toggleSound);
+soundToggle.addEventListener('keydown', (e) => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleSound(); }
+});
+
+// Ook startkapitaal-input direct reflecteren in cash als bot niet loopt
+document.getElementById('capital').addEventListener('input', () => {
+  if (!state.running) {
+    const v = parseFloat(document.getElementById('capital').value) || 0;
+    state.cash = v;
+    state.startCapital = v;
+    updateStats();
+  }
+});
+
+updateStats();
+</script>
+
 </body>
 </html>
+            
